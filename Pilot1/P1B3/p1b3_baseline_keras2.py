@@ -203,6 +203,7 @@ def add_conv_layer(model, layer_params, input_dim=None, locally_connected=False)
                 model.add(Conv2D(filters, filter_len, strides=stride))
     return model
 
+
 def run(gParameters):
     """
     Runs the model using the specified set of parameters
@@ -226,15 +227,17 @@ def run(gParameters):
         print(gParameters['dense'])
 
     if 'conv' in gParameters:
-        #conv_list = p1_common.parse_conv_list(gParameters['conv'])
+        flat = gParameters['conv']
+        gParameters['conv'] = [flat[i:i+3] for i in range(0, len(flat), 3)]
+	    #conv_list = p1_common.parse_conv_list(gParameters['conv'])
         #cval = gParameters['conv']
         #try:
-            #is_str = isinstance(cval, basestring)
+        #    is_str = isinstance(cval, basestring)
         #except NameError:
-            #is_str = isinstance(cval, str)
+        #    is_str = isinstance(cval, str)
         #if is_str:
-            #res = str2lst(cval)
-            #gParameters['conv'] = res
+        #    res = str2lst(cval)
+        #    gParameters['conv'] = res
         print('Conv input', gParameters['conv'])
     # print('Params:', gParameters)
     # Construct extension to save model
