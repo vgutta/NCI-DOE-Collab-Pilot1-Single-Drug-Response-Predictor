@@ -133,8 +133,6 @@ python p1b3_baseline_keras2.py --conv 10 10 1 --pool 100 --locally_connected --o
 This example adds a locally-connected layer to the MLP and changes the optimizer and batch size. The locally connected layer is a convolution layer with unshared weights, so it tends to increase the number of parameters dramatically. Here we use a pooling size of 100 to reduce the parameters. This example also adds a batch normalization layer between any core layer and its activation. Batch normalization is known to speed up training in some settings. 
 
 ### Preliminary performance
-Some of the best validation loss values we have seen are in the 0.04-0.06 range, which roughly corresponds to about 20-25% percent growth error per data point. We are running hyperparameter searches. 
-
 During model training, a log file records the history of various metrics and the model with the best validation loss is saved in HDF5. Here are some examples of error distribution plots that are created whenever the model is improved. 
 
 ![Histogram of errors: Random vs Epoch 1](https://raw.githubusercontent.com/ECP-CANDLE/Benchmarks/master/Pilot1/P1B3/images/histo_It0.png)
