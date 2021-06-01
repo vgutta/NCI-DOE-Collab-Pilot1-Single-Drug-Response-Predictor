@@ -142,3 +142,19 @@ During model training, a log file records the history of various metrics and the
 ![Histogram of errors after 141 epochs](https://raw.githubusercontent.com/ECP-CANDLE/Benchmarks/master/Pilot1/P1B3/images/histo_It140.png)
 
 ![Measure vs Predicted percent growth after 141 epochs](https://raw.githubusercontent.com/ECP-CANDLE/Benchmarks/master/Pilot1/P1B3/images/meas_vs_pred_It140.png)
+
+### Inference
+To test the trained model in inference, execute the script [p1b3_infer.py](p1b3_infer.py). This script does the following:
+* Downloads the trained model.
+* Downloads the processed test dataset with the corresponding labels.
+* Performs inference on the test dataset.
+* Reports the accuracy of the model on the test dataset.
+
+```
+python p1b3_infer.py --cell_features all --drug_features all 
+...
+Loaded model from disk
+...
+test_loss: 0.26381784677505493
+test_acc: 0.6963265538215637
+```
