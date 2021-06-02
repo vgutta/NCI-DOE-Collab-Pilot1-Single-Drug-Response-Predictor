@@ -153,6 +153,6 @@ python p1b3_infer.py --cell_features all --drug_features all
 ...
 Loaded model from disk
 ...
-test_loss: 0.26381784677505493
-test_acc: 0.6963265538215637
+test_loss: 0.2638
+test_acc: 0.6963
 ```
