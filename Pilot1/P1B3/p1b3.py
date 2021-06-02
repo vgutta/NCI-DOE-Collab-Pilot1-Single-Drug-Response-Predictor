@@ -583,7 +583,8 @@ def load_dose_response(path, seed, dtype, min_logconc=-5., max_logconc=-5., subs
     return df
 
 def stage_data():
-    server = 'http://ftp.mcs.anl.gov/pub/candle/public/benchmarks/P1B3/'
+#     server = 'http://ftp.mcs.anl.gov/pub/candle/public/benchmarks/P1B3/'
+    server = 'https://modac.cancer.gov/api/v2/dataObject/NCI_DOE_Archive/JDACS4C/JDACS4C_Pilot_1/cancer_drug_response_prediction_dataset/'
 
     cell_expr_path = candle.fetch_file(server+'P1B3_cellline_expressions.tsv', 'Pilot1', untar=False)
     # cell_mrna_path = candle.fetch_file(server+'P1B3_cellline_mirna.tsv', 'Pilot1', untar=False)
