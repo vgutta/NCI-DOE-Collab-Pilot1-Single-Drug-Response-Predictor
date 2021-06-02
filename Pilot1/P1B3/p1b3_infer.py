@@ -363,8 +363,8 @@ def run(gParameters):
     test_loss, test_acc, _, _, _, _ = evaluate_model(model, test_gen, test_steps, metric=gParameters['loss'],
                                                      category_cutoffs=gParameters['category_cutoffs'])
 
-    benchmark.logger.info('test_loss: {}'.format(test_loss))
-    benchmark.logger.info('test_acc: {}'.format(test_acc))
+    benchmark.logger.info('test_loss: {:.4f}'.format(test_loss))
+    benchmark.logger.info('test_acc: {:.4f}'.format(test_acc))
 
     # checkpointer = ModelCheckpoint(filepath=gParameters['output_dir']+'.model'+ext+'.h5', save_best_only=True)
     # progbar = MyProgbarLogger(train_steps * gParameters['batch_size'])
