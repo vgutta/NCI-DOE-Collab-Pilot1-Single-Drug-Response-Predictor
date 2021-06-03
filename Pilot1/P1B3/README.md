@@ -22,11 +22,27 @@ Output dimensions: 1 (growth percentage)
 * Proposed network architecture: MLP, MLP with convolution-like layers
 * Number of layers: 5-7 layers
 
+### Setup
+To set up the Python environment needed to train and run this model:
+1. Install [conda](https://docs.conda.io/en/latest/) package manager.
+2. Clone this repository.
+3. Create the environment as shown below.
+
+```bash
+   cd Pilot1/P1B3
+   conda env create -f environment.yml -n P1B3
+   conda activate UNO
+   ```
+
+To download the processed data needed to train and test the model, and the trained model files:
+1. Create an account first on the Model and Data Clearinghouse [MoDaC](modac.cancer.gov). 
+2. Follow the instructions in the Training section below.
+3. When prompted, enter your MoDaC credentials.
+
 ### Running the baseline implementation
 
 ```
-$ cd Pilot1/P1B3
-$ python p1b3_baseline_keras2.py
+python p1b3_baseline_keras2.py
 ```
 
 ### Variations of the problem and command line examples
