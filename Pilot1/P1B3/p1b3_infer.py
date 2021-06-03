@@ -325,13 +325,21 @@ def run(gParameters):
 
     from keras.models import model_from_json, load_model
     # load json and create model
-    json_file = open('p1b3.model.json', 'r')
+    trained_model_json = 'p1b3.model.json'
+    json_data_url = 'https://modac.cancer.gov/api/v2/dataObject/NCI_DOE_Archive/JDACS4C/JDACS4C_Pilot_1/single_drug_response_predictor_p1b3/' \
+                    + trained_model_json
+    candle.get_file(trained_model_json, json_data_url, datadir=".")
+    json_file = open(trained_model_json, 'r')
     loaded_model_json = json_file.read()
     json_file.close()
     loaded_model_json = model_from_json(loaded_model_json)
 
     # load weights into new model
-    loaded_model_json.load_weights('p1b3.model.h5')
+    trained_model_h5 = 'p1b3.model.h5'
+    h5_data_url = 'https://modac.cancer.gov/api/v2/dataObject/NCI_DOE_Archive/JDACS4C/JDACS4C_Pilot_1/single_drug_response_predictor_p1b3/' \
+                  + trained_model_h5
+    candle.get_file(trained_model_h5, h5_data_url, datadir=".")
+    loaded_model_json.load_weights(trained_model_h5)
     print("Loaded model weights from disk")
 
     loaded_model_json.compile(loss=gParameters['loss'], optimizer=optimizer)
