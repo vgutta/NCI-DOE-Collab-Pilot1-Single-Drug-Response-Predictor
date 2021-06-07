@@ -36,7 +36,7 @@ To set up the Python environment needed to train and run this model:
    ```
 
 To download the processed data needed to train and test the model, and the trained model files:
-1. Create an account first on the Model and Data Clearinghouse [MoDaC](modac.cancer.gov). 
+1. Create an account on the Model and Data Clearinghouse ([MoDaC](https://modac.cancer.gov/)). 
 2. Follow the instructions in the Training section below.
 3. When prompted, enter your MoDaC credentials.
 
