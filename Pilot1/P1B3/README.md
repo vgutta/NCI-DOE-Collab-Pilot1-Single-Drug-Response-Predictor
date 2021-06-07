@@ -162,12 +162,7 @@ During model training, a log file records the history of various metrics. The mo
 ![Measure vs Predicted percent growth after 191 epochs](./images/meas_vs_pred_It190.png)
 
 ### Inference
-To test the trained model in inference, execute the script [p1b3_infer.py](p1b3_infer.py), as shown below. This script does the following:
-* Downloads the trained model.
-* Downloads the processed test dataset with the corresponding labels.
-* Performs inference on the test dataset.
-* Reports the accuracy of the model on the test dataset.
-
+To test the trained model in inference, execute the script [p1b3_infer.py](p1b3_infer.py), as shown below. 
 ```
 python p1b3_infer.py --cell_features all --drug_features all 
 ...
@@ -176,3 +171,9 @@ Loaded model from disk
 test_loss: 0.2638
 test_acc: 0.6963
 ```
+
+This script does the following:
+* Downloads the trained model.
+* Downloads the processed test dataset with the corresponding labels.
+* Performs inference on the test dataset.
+* Reports the accuracy of the model on the test dataset.
