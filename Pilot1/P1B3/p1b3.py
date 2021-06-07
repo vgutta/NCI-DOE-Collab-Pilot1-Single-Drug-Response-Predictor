@@ -583,15 +583,22 @@ def load_dose_response(path, seed, dtype, min_logconc=-5., max_logconc=-5., subs
     return df
 
 def stage_data():
-    server = 'http://ftp.mcs.anl.gov/pub/candle/public/benchmarks/P1B3/'
+#     server = 'http://ftp.mcs.anl.gov/pub/candle/public/benchmarks/P1B3/'
+    server = 'https://modac.cancer.gov/api/v2/dataObject/NCI_DOE_Archive/JDACS4C/JDACS4C_Pilot_1/cancer_drug_response_prediction_dataset/'
 
     cell_expr_path = candle.fetch_file(server+'P1B3_cellline_expressions.tsv', 'Pilot1', untar=False)
-    cell_mrna_path = candle.fetch_file(server+'P1B3_cellline_mirna.tsv', 'Pilot1', untar=False)
-    cell_prot_path = candle.fetch_file(server+'P1B3_cellline_proteome.tsv', 'Pilot1', untar=False)
-    cell_kino_path = candle.fetch_file(server+'P1B3_cellline_kinome.tsv', 'Pilot1', untar=False)
-    drug_desc_path = candle.fetch_file(server+'P1B3_drug_descriptors.tsv', 'Pilot1', untar=False)
-    drug_auen_path = candle.fetch_file(server+'P1B3_drug_latent.csv', 'Pilot1', untar=False)
-    dose_resp_path = candle.fetch_file(server+'P1B3_dose_response.csv', 'Pilot1', untar=False)
+    # cell_mrna_path = candle.fetch_file(server+'P1B3_cellline_mirna.tsv', 'Pilot1', untar=False)
+    cell_mrna_path = candle.fetch_file(server + 'RNA__microRNA_OSU_V3_chip_log2.transposed.txt', 'Pilot1', untar=False)
+    # cell_prot_path = candle.fetch_file(server+'P1B3_cellline_proteome.tsv', 'Pilot1', untar=False)
+    cell_prot_path = candle.fetch_file(server + 'nci60_proteome_log2.transposed.tsv', 'Pilot1', untar=False)
+    # cell_kino_path = candle.fetch_file(server+'P1B3_cellline_kinome.tsv', 'Pilot1', untar=False)
+    cell_kino_path = candle.fetch_file(server + 'nci60_kinome_log2.transposed.tsv', 'Pilot1', untar=False)
+    # drug_desc_path = candle.fetch_file(server+'P1B3_drug_descriptors.tsv', 'Pilot1', untar=False)
+    drug_desc_path = candle.fetch_file(server + 'descriptors.2D-NSC.5dose.filtered.txt', 'Pilot1', untar=False)
+    # drug_auen_path = candle.fetch_file(server+'P1B3_drug_latent.csv', 'Pilot1', untar=False)
+    drug_auen_path = candle.fetch_file(server + 'Aspuru-Guzik_NSC_latent_representation_292D.csv', 'Pilot1', untar=False)
+    # dose_resp_path = candle.fetch_file(server+'P1B3_dose_response.csv', 'Pilot1', untar=False)
+    dose_resp_path = candle.fetch_file(server + 'NCI60_dose_response_with_missing_z5_avg.csv', 'Pilot1', untar=False)
     test_cell_path = candle.fetch_file(server+'P1B3_test_celllines.txt', 'Pilot1', untar=False)
     test_drug_path = candle.fetch_file(server+'P1B3_test_drugs.txt', 'Pilot1', untar=False)
 

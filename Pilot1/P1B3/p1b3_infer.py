@@ -255,7 +255,7 @@ def run(gParameters):
     benchmark.logger.setLevel(logging.DEBUG)
     benchmark.logger.addHandler(fh)
     benchmark.logger.addHandler(sh)
-    benchmark.logger.info('Params: {}'.format(gParameters))
+    # benchmark.logger.info('Params: {}'.format(gParameters))
 
     # Get default parameters for initialization and optimizer functions
     kerasDefaults = candle.keras_default_config()
@@ -323,51 +323,81 @@ def run(gParameters):
                                                 gParameters['learning_rate'],
                                                 kerasDefaults)
 
-    # Compile and display model
-    model.compile(loss=gParameters['loss'], optimizer=optimizer)
-    model.summary()
-    benchmark.logger.debug('Model: {}'.format(model.to_json()))
+    from keras.models import model_from_json, load_model
+    # load json and create model
+    trained_model_json = 'p1b3.model.json'
+    json_data_url = 'https://modac.cancer.gov/api/v2/dataObject/NCI_DOE_Archive/JDACS4C/JDACS4C_Pilot_1/single_drug_response_predictor_p1b3/' \
+                    + trained_model_json
+    candle.get_file(trained_model_json, json_data_url, datadir=".")
+    json_file = open(trained_model_json, 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    loaded_model_json = model_from_json(loaded_model_json)
 
-    train_gen = benchmark.DataGenerator(loader, batch_size=gParameters['batch_size'], shape=gen_shape, name='train_gen', cell_noise_sigma=gParameters['cell_noise_sigma']).flow()
-    val_gen = benchmark.DataGenerator(loader, partition='val', batch_size=gParameters['batch_size'], shape=gen_shape, name='val_gen').flow()
-    val_gen2 = benchmark.DataGenerator(loader, partition='val', batch_size=gParameters['batch_size'], shape=gen_shape, name='val_gen2').flow()
+    # load weights into new model
+    trained_model_h5 = 'p1b3.model.h5'
+    h5_data_url = 'https://modac.cancer.gov/api/v2/dataObject/NCI_DOE_Archive/JDACS4C/JDACS4C_Pilot_1/single_drug_response_predictor_p1b3/' \
+                  + trained_model_h5
+    candle.get_file(trained_model_h5, h5_data_url, datadir=".")
+    loaded_model_json.load_weights(trained_model_h5)
+    print("Loaded model weights from disk")
+
+    loaded_model_json.compile(loss=gParameters['loss'], optimizer=optimizer)
+    print(loaded_model_json.summary())
+    print("Loaded model from disk")
+    model = loaded_model_json
+
+    # # Compile and display model
+    # model.compile(loss=gParameters['loss'], optimizer=optimizer)
+    # model.summary()
+    # benchmark.logger.debug('Model: {}'.format(model.to_json()))
+
+    # train_gen = benchmark.DataGenerator(loader, batch_size=gParameters['batch_size'], shape=gen_shape, name='train_gen', cell_noise_sigma=gParameters['cell_noise_sigma']).flow()
+    # val_gen = benchmark.DataGenerator(loader, partition='val', batch_size=gParameters['batch_size'], shape=gen_shape, name='val_gen').flow()
+    # val_gen2 = benchmark.DataGenerator(loader, partition='val', batch_size=gParameters['batch_size'], shape=gen_shape, name='val_gen2').flow()
     test_gen = benchmark.DataGenerator(loader, partition='test', batch_size=gParameters['batch_size'], shape=gen_shape, name='test_gen').flow()
 
-    train_steps = int(loader.n_train/gParameters['batch_size'])
-    val_steps = int(loader.n_val/gParameters['batch_size'])
+    # train_steps = int(loader.n_train/gParameters['batch_size'])
+    # val_steps = int(loader.n_val/gParameters['batch_size'])
     test_steps = int(loader.n_test/gParameters['batch_size'])
 
-    if 'train_steps' in gParameters:
-        train_steps = gParameters['train_steps']
-    if 'val_steps' in gParameters:
-        val_steps = gParameters['val_steps']
+    # if 'train_steps' in gParameters:
+    #     train_steps = gParameters['train_steps']
+    # if 'val_steps' in gParameters:
+    #     val_steps = gParameters['val_steps']
     if 'test_steps' in gParameters:
         test_steps = gParameters['test_steps']
 
-    checkpointer = ModelCheckpoint(filepath=gParameters['output_dir']+'.model'+ext+'.h5', save_best_only=True)
-    progbar = MyProgbarLogger(train_steps * gParameters['batch_size'])
-    loss_history = MyLossHistory(progbar=progbar, val_gen=val_gen2, test_gen=test_gen,
-                            val_steps=val_steps, test_steps=test_steps,
-                            metric=gParameters['loss'], category_cutoffs=gParameters['category_cutoffs'],
-                            ext=ext, pre=gParameters['output_dir'])
+    test_loss, test_acc, _, _, _, _ = evaluate_model(model, test_gen, test_steps, metric=gParameters['loss'],
+                                                     category_cutoffs=gParameters['category_cutoffs'])
 
-    # Seed random generator for training
-    np.random.seed(seed)
+    benchmark.logger.info('test_loss: {:.4f}'.format(test_loss))
+    benchmark.logger.info('test_acc: {:.4f}'.format(test_acc))
 
-    candleRemoteMonitor = candle.CandleRemoteMonitor(params=gParameters)
+    # checkpointer = ModelCheckpoint(filepath=gParameters['output_dir']+'.model'+ext+'.h5', save_best_only=True)
+    # progbar = MyProgbarLogger(train_steps * gParameters['batch_size'])
+    # loss_history = MyLossHistory(progbar=progbar, val_gen=val_gen2, test_gen=test_gen,
+    #                         val_steps=val_steps, test_steps=test_steps,
+    #                         metric=gParameters['loss'], category_cutoffs=gParameters['category_cutoffs'],
+    #                         ext=ext, pre=gParameters['output_dir'])
 
-    history = model.fit_generator(train_gen, train_steps,
-                        epochs=gParameters['epochs'],
-                        validation_data=val_gen,
-                        validation_steps=val_steps,
-                        verbose=0,
-                        callbacks=[checkpointer, loss_history, progbar, candleRemoteMonitor],
-                        )
+    # # Seed random generator for training
+    # np.random.seed(seed)
+    #
+    # candleRemoteMonitor = candle.CandleRemoteMonitor(params=gParameters)
+
+    # history = model.fit_generator(train_gen, train_steps,
+    #                     epochs=gParameters['epochs'],
+    #                     validation_data=val_gen,
+    #                     validation_steps=val_steps,
+    #                     verbose=0,
+    #                     callbacks=[checkpointer, loss_history, progbar, candleRemoteMonitor],
+    #                     )
 
     benchmark.logger.removeHandler(fh)
     benchmark.logger.removeHandler(sh)
 
-    return history
+    # return history
 
 def main():
 
