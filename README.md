@@ -18,7 +18,7 @@ The community can use a neural network and multiple machine learning techniques 
 The following components are in the Model and Data Clearinghouse (MoDaC):
 * The [Single Drug Response Predictor (P1B3)](https://modac.cancer.gov/searchTab?dme_data_id=NCI-DME-MS01-8308552) asset contains the untrained model and trained model:
   * The model topology file is p1b3.model.json. 
-  * The trained model is defined by combining the untrained model (p1b3.model.json) and model weights (p1b3.model.h5).
+  * The trained model is defined by combining the untrained model (p1b3.model.json) and trained model weights (p1b3.model.h5).
   * The trained model is used in inference.
 * The [Pilot 1 Cancer Drug Response Prediction Dataset](https://modac.cancer.gov/searchTab?dme_data_id=NCI-DME-MS01-8088592) asset contains the processed training and test data. 
 
