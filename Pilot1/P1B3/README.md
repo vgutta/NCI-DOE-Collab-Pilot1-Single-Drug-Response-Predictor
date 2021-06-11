@@ -41,10 +41,14 @@ To download the processed data needed to train and test the model, and the train
 3. When prompted, enter your MoDaC credentials.
 
 ### Running the baseline implementation
-
 ```
 python p1b3_baseline_keras2.py
 ```
+This script does the following:
+* Reads the model configuration parameters from [p1b3_default_model.txt](p1b3_default_model.txt).
+* Downloads the training data and splits it to training/validation sets.
+* Creates and trains the Keras model.
+* Saves the best-trained model based on the validation accuracy.
 
 ### Variations of the problem and command line examples
 This benchmark can be run with additional or alternative molecular and drug feature sets. Various network architectural and training related hyperparameters can also be set at the command line. Here are some examples.
@@ -68,8 +72,10 @@ Total input dimensions: 40037
 The `--conv 10 10 1 5 5 1` parameter adds 2 convolution layers to the default 4-layer (1000-500-100-50) dense network. The first 3-tuple (10, 10, 1) denotes a convolution layer with 10 filters of kernel length 10 and stride 1; the second convolution layer has 5 filters with length 5 and stride 1.
 
 #### Example output
-With the default parameters, running the benchmark takes about 14 days using a single v100x, with the following output: 
+Running the benchmark takes about 14 days using a single v100x, with the following output: 
 ```
+python p1b3_baseline_keras2.py --cell_features all --drug_features all --conv 10 10 1 5 5 1 --epochs 200
+
 Using TensorFlow backend.
 Params: {'dense': [1000, 500, 100, 50], 'batch_size': 100, 'epochs': 200, 'activation': 'relu', 'loss': 'mse', 'optimizer': 'sgd', 'learning_rate': 0.001, 'scaling': 'std', 'dropout': 0.1, 'feature_subsample': 0, 'val_split': 0.1, 'rng_seed': 2017, 'initialization': 'normal', 'min_logconc': -5.0, 'max_logconc': -4.0, 'category_cutoffs': [0.0], 'test_cell_split': 0.15, 'cell_features': ['all'], 'drug_features': ['all'], 'subsample': 'naive_balancing', 'batch_normalization': False, 'cell_noise_sigma': 0.0, 'output_dir': '/gpfs/gsfs12/users/lup2/NCI-DOE-Collab-Pilot1-Tumor_Classifier/Benchmarks/Pilot1/P1B3/save/EXP000/RUN000', 'verbose': None, 'logfile': None, 'train_bool': True, 'experiment_id': 'EXP000', 'run_id': 'RUN000', 'shuffle': False, 'profiling': False, 'scramble': False, 'workers': 1, 'conv': [[10, 10, 1], [5, 5, 1]], 'data_type': <class 'numpy.float32'>, 'timeout': -1}
 Loaded 2328562 unique (D, CL) response sets.
