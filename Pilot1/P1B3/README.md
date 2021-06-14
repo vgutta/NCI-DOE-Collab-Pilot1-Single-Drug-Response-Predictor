@@ -161,7 +161,7 @@ python p1b3_baseline_keras2.py --conv 10 10 1 --pool 100 --locally_connected --o
 This example adds a locally-connected layer to the MLP and changes the optimizer and batch size. The locally connected layer is a convolution layer with unshared weights, so it tends to increase the number of parameters dramatically. Here we use a pooling size of 100 to reduce the parameters. This example also adds a batch normalization layer between any core layer and its activation. Batch normalization is known to speed up training in some settings. 
 
 ### Preliminary performance
-During model training, a log file records the history of various metrics. The model with the best validation loss is saved in HDF5. Here are some examples of error distribution plots that are created whenever the model is improved. 
+During model training, a log file records the history of various metrics. The model with the best validation loss is saved in HDF5. Here are some examples of error distribution plots that are created in a directory called "images" whenever the model is improved. 
 
 ![Histogram of errors: Random vs Epoch 1](./images/histo_It0.png)
 
