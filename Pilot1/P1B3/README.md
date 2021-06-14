@@ -32,7 +32,7 @@ To set up the Python environment needed to train and run this model:
 ```bash
    cd Pilot1/P1B3
    conda env create -f environment.yml -n P1B3
-   conda activate UNO
+   conda activate P1B3 
    ```
 
 To download the processed data needed to train and test the model, and the trained model files:

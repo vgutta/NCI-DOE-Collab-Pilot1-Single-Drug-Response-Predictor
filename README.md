@@ -1,7 +1,7 @@
 # NCI-DOE-Collab-Pilot1-Single-Drug-Response-Predictor
 
 ### Description
-The Pilot 1 Single Drug Response Predictor benchmark, also called P1B3, shows how to train and use a neural network model to predict tumor dose response across multiple data sources.
+The Pilot 1 Single Drug Response Predictor benchmark, also called P1B3, shows how to train and use a neural network model to predict tumor dose response across multiple data types.
 
 ### User Community
 Users who are interested in the following subjects:
