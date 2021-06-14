@@ -50,6 +50,8 @@ This script does the following:
 * Creates and trains the Keras model.
 * Saves the best-trained model based on the validation accuracy.
 
+The baseline implementation can take few days to complete the training and is provided as an example to use the model configuration parameters file. Check the variations below for the models that has been trained.
+
 ### Variations of the problem and command line examples
 This benchmark can be run with additional or alternative molecular and drug feature sets. Various network architectural and training related hyperparameters can also be set at the command line. Here are some examples.
 
