@@ -25,6 +25,16 @@ import matplotlib.pyplot as plt
 
 import p1b3 as benchmark
 import candle
+#cfg = K.tf.ConfigProto(gpu_options={'allow_growth': True})
+#K.set_session(K.tf.Session(config=cfg))
+
+from keras.backend.tensorflow_backend import set_session
+import tensorflow as tf
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True  # dynamically grow the memory used on the GPU
+config.log_device_placement = True  # to log device placement (on which device the operation ran)
+sess = tf.Session(config=config)
+set_session(sess)  # set this TensorFlow session as the default session for Keras
 
 #np.set_printoptions(threshold=np.nan)
 
