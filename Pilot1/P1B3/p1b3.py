@@ -359,6 +359,7 @@ def load_cellline_expressions(path, dtype, ncols=None, scaling='std'):
         type of scaling to apply
     """
 
+    """
     df = pd.read_csv(path, sep='\t', engine='c',
                      na_values=['na','-',''])
 
@@ -373,6 +374,24 @@ def load_cellline_expressions(path, dtype, ncols=None, scaling='std'):
         usecols = np.random.choice(total, size=ncols, replace=False)
         df2 = df2.iloc[:, usecols]
 
+    df2 = impute_and_scale(df2, scaling)
+    df2 = df2.astype(dtype)
+    df = pd.concat([df1, df2], axis=1)
+    """
+    
+    ################### CCLE expression #######################
+    
+    df = pd.read_csv('/lustre/schandra_crpl/users/2216/NCI-DOE-Collab-Pilot1-Single-Drug-Response-Predictor/Data/Pilot1/filtered_ccle.tsv', sep='\t', engine='c',
+                     na_values=['na','-','', 'NaN'])
+    
+    df1 = df['CELLNAME']
+    df2 = df.drop('CELLNAME', 1)
+    
+    total = df2.shape[1]
+    if ncols and ncols < total:
+        usecols = np.random.choice(total, size=ncols, replace=False)
+        df2 = df2.iloc[:, usecols]
+        
     df2 = impute_and_scale(df2, scaling)
     df2 = df2.astype(dtype)
     df = pd.concat([df1, df2], axis=1)
@@ -481,7 +500,8 @@ def load_drug_descriptors(path, dtype, ncols=None, scaling='std'):
     scaling : 'maxabs' [-1,1], 'minmax' [0,1], 'std', or None, optional (default 'std')
         type of scaling to apply
     """
-
+    
+    '''
     df = pd.read_csv(path, sep='\t', engine='c',
                      na_values=['na','-',''],
                      dtype=dtype,
@@ -503,6 +523,31 @@ def load_drug_descriptors(path, dtype, ncols=None, scaling='std'):
     df2 = df2.astype(dtype)
 
     df_dg = pd.concat([df1, df2], axis=1)
+    '''
+     
+    ################# GDSC Drug descriptors ##########################
+    
+    df = pd.read_csv('/lustre/schandra_crpl/users/2216/NCI-DOE-Collab-Pilot1-Single-Drug-Response-Predictor/Data/Pilot1/gdsc_drugs_descriptors.tsv', sep='\t', engine='c',
+                     na_values=['na','-','', 'NaN'],
+                     dtype=dtype,
+                     converters ={'NAME' : str})
+    
+    #df1 = df['NAME']
+    df1 = pd.DataFrame(df.loc[:,'NAME'])
+    df1.rename(columns={'NAME': 'GDSC'}, inplace=True)
+    
+    df2 = df.drop('NAME', 1)
+    
+    total = df2.shape[1]
+    if ncols and ncols < total:
+        usecols = np.random.choice(total, size=ncols, replace=False)
+        df2 = df2.iloc[:,usecols]
+
+    df2 = impute_and_scale(df2, scaling)
+    df2 = df2.astype(dtype)
+
+    df_dg = pd.concat([df1, df2], axis=1)
+    
 
     return df_dg
 
@@ -563,6 +608,7 @@ def load_dose_response(path, seed, dtype, min_logconc=-5., max_logconc=-5., subs
         subsampling strategy to use to balance the data based on growth
     """
 
+    """
     df = pd.read_csv(path, sep=',', engine='c',
                      na_values=['na','-',''],
                      dtype={'NSC':object, 'CELLNAME':str, 'LOG_CONCENTRATION':dtype, 'GROWTH':dtype})
@@ -579,7 +625,18 @@ def load_dose_response(path, seed, dtype, min_logconc=-5., max_logconc=-5., subs
         df = pd.concat([df1, df2, df3, df4])
 
     df = df.set_index(['NSC'])
+    
+    """
+    
+    ############## CCLE - GDSC drugset ########################
+    df = pd.read_csv('/lustre/schandra_crpl/users/2216/NCI-DOE-Collab-Pilot1-Single-Drug-Response-Predictor/Data/Pilot1/gdsc_dose_response.tsv', sep='\t', engine='c',
+                     na_values=['na','-','', 'NaN'],
+                     dtype={'GDSC':object, 'CELLNAME':str, 'LOG_CONCENTRATION':dtype, 'GROWTH':dtype})
 
+    df = df[['GDSC', 'CELLNAME', 'GROWTH', 'LOG_CONCENTRATION']]
+    
+    df = df.set_index(['GDSC'])
+    
     return df
 
 def stage_data():
@@ -661,12 +718,12 @@ class DataLoader(object):
         df = df.reset_index()
 
         if 'all' in cell_features:
-            self.cell_features = ['expression', 'mirna', 'proteome']
+            self.cell_features = ['expression']
         else:
             self.cell_features = cell_features
 
         if 'all' in drug_features:
-            self.drug_features = ['descriptors', 'latent']
+            self.drug_features = ['descriptors']
         else:
             self.drug_features = drug_features
 
@@ -698,7 +755,7 @@ class DataLoader(object):
             if fea == 'descriptors':
                 self.df_drug_desc = load_drug_descriptors(drug_desc_path, dtype, ncols=feature_subsample, scaling=scaling)
                 self.input_shapes['drug_descriptors'] = (self.df_drug_desc.shape[1] - 1,)
-                df = df.merge(self.df_drug_desc[['NSC']], on='NSC')
+                df = df.merge(self.df_drug_desc[['GDSC']], on='GDSC')
             elif fea == 'latent':
                 self.df_drug_auen = load_drug_autoencoded(drug_auen_path, dtype, ncols=feature_subsample, scaling=scaling)
                 self.input_shapes['drug_SMILES_latent'] = (self.df_drug_auen.shape[1] - 1,)
@@ -714,10 +771,11 @@ class DataLoader(object):
         logger.debug('Filtered down to {} rows with matching information.'.format(df.shape[0]))
         # df[['GROWTH', 'LOG_CONCENTRATION']].to_csv('filtered.response.csv')
 
-        df_test_cell = pd.read_csv(test_cell_path)
-        df_test_drug = pd.read_csv(test_drug_path, dtype={'NSC':object})
+        df_test_cell = pd.read_csv('/lustre/schandra_crpl/users/2216/NCI-DOE-Collab-Pilot1-Single-Drug-Response-Predictor/Data/Pilot1/test_celllines.tsv', sep='\t')
+        df_test_drug = pd.read_csv('/lustre/schandra_crpl/users/2216/NCI-DOE-Collab-Pilot1-Single-Drug-Response-Predictor/Data/Pilot1/test_gdsc_drugs_list.tsv', sep='\t', dtype={'GDSC':object})
+        
 
-        df_train_val = df[(~df['NSC'].isin(df_test_drug['NSC'])) & (~df['CELLNAME'].isin(df_test_cell['CELLNAME']))]
+        df_train_val = df[(~df['GDSC'].isin(df_test_drug['GDSC'])) & (~df['CELLNAME'].isin(df_test_cell['CELLNAME']))]
         logger.debug('Combined train and validation set has {} rows'.format(df_train_val.shape[0]))
 
         if test_cell_split and test_cell_split > 0:
@@ -726,7 +784,7 @@ class DataLoader(object):
         else:
             logger.debug('Use unseen drugs and predefined unseen cell lines for testing: ' + ', '.join(sorted(list(df_test_cell['CELLNAME']))))
 
-        df_test = df.merge(df_test_cell, on='CELLNAME').merge(df_test_drug, on='NSC')
+        df_test = df.merge(df_test_cell, on='CELLNAME').merge(df_test_drug, on='GDSC')
         logger.debug('Test set has {} rows'.format(df_test.shape[0]))
 
         if shuffle:
@@ -843,13 +901,13 @@ class DataGenerator(object):
 
             for fea in self.data.drug_features:
                 if fea == 'descriptors':
-                    df = df.merge(self.data.df_drug_desc, on='NSC')
+                    df = df.merge(self.data.df_drug_desc, on='GDSC')
                 elif fea == 'latent':
                     df = df.merge(self.data.df_drug_auen, on='NSC')
                 elif fea == 'noise':
                     df = df.merge(self.data.df_drug_rand, on='NSC')
 
-            df = df.drop(['CELLNAME', 'NSC'], 1)
+            df = df.drop(['CELLNAME', 'GDSC'], 1)
             x = np.array(df.iloc[:, 1:])
 
             if self.cell_noise_sigma:
