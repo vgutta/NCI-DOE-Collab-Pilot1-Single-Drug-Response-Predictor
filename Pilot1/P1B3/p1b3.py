@@ -361,6 +361,8 @@ def load_cellline_expressions(path, dtype, ncols=None, scaling='std'):
 
     df = pd.read_csv(path, sep='\t', engine='c',
                      na_values=['na','-',''])
+    
+    df.head()
 
     df1 = df['CellLine']
     df1 = df1.map(lambda x: x.replace('.', ':'))
@@ -376,8 +378,27 @@ def load_cellline_expressions(path, dtype, ncols=None, scaling='std'):
     df2 = impute_and_scale(df2, scaling)
     df2 = df2.astype(dtype)
     df = pd.concat([df1, df2], axis=1)
+    
+    nci = df
+    
+    ################### CCLE expression #######################
+    
+    df = pd.read_csv('/global/u2/v/vineethg/NCI-DOE-Collab-Pilot1-Single-Drug-Response-Predictor/Data/Pilot1/filtered_ccle.tsv', sep='\t', engine='c', na_values=['na','-','', 'NaN'])
+    
+    df1 = df['CELLNAME']
+    df2 = df.drop('CELLNAME', 1)
+    
+    total = df2.shape[1]
+    if ncols and ncols < total:
+        usecols = np.random.choice(total, size=ncols, replace=False)
+        df2 = df2.iloc[:, usecols]
+        
+    df2 = impute_and_scale(df2, scaling)
+    df2 = df2.astype(dtype)
+    df = pd.concat([df1, df2], axis=1)
 
-    return df
+    merged_cell_exp = pd.concat([nci, df], join="outer", axis=0, ignore_index=True)
+    return merged_cell_exp#nci, df
 
 
 def load_cellline_mirna(path, dtype, ncols=None, scaling='std'):
@@ -503,8 +524,33 @@ def load_drug_descriptors(path, dtype, ncols=None, scaling='std'):
     df2 = df2.astype(dtype)
 
     df_dg = pd.concat([df1, df2], axis=1)
+    
+    copy = df_dg
+    
+    ################# GDSC Drug descriptors ##########################
+    
+    df = pd.read_csv('/global/u2/v/vineethg/NCI-DOE-Collab-Pilot1-Single-Drug-Response-Predictor/Data/Pilot1/gdsc_drugs_descriptors.tsv', sep='\t', engine='c',
+                     na_values=['na','-','', 'NaN'],
+                     dtype=dtype,
+                     converters ={'NAME' : str})
+    
+    #df1 = df['NAME']
+    df1 = pd.DataFrame(df.loc[:,'NAME'])
+    df1.rename(columns={'NAME': 'GDSC'}, inplace=True)
+    
+    df2 = df.drop('NAME', 1)
+    
+    total = df2.shape[1]
+    if ncols and ncols < total:
+        usecols = np.random.choice(total, size=ncols, replace=False)
+        df2 = df2.iloc[:,usecols]
 
-    return df_dg
+    df2 = impute_and_scale(df2, scaling)
+    df2 = df2.astype(dtype)
+
+    df_dg = pd.concat([df1, df2], axis=1)
+
+    return copy, df_dg
 
 
 def load_drug_autoencoded(path, dtype, ncols=None, scaling='std'):
@@ -579,8 +625,19 @@ def load_dose_response(path, seed, dtype, min_logconc=-5., max_logconc=-5., subs
         df = pd.concat([df1, df2, df3, df4])
 
     df = df.set_index(['NSC'])
+    
+    copy = df
+    
+    ############## CCLE - GDSC drugset ########################
+    df = pd.read_csv('/global/u2/v/vineethg/NCI-DOE-Collab-Pilot1-Single-Drug-Response-Predictor/Data/Pilot1/gdsc_dose_response.tsv', sep='\t', engine='c',
+                     na_values=['na','-','', 'NaN'],
+                     dtype={'GDSC':object, 'CELLNAME':str, 'LOG_CONCENTRATION':dtype, 'GROWTH':dtype})
 
-    return df
+    df = df[['GDSC', 'CELLNAME', 'GROWTH', 'LOG_CONCENTRATION']]
+    
+    df = df.set_index(['GDSC'])
+
+    return copy, df
 
 def stage_data():
 #     server = 'http://ftp.mcs.anl.gov/pub/candle/public/benchmarks/P1B3/'
@@ -654,11 +711,12 @@ class DataLoader(object):
         # Seed random generator for loading data
         np.random.seed(seed)
 
-        df = load_dose_response(dose_resp_path, seed, dtype,
+        df_nci, df_gdsc = load_dose_response(dose_resp_path, seed, dtype,
                                 min_logconc=min_logconc, max_logconc=max_logconc, subsample=subsample)
-        logger.info('Loaded {} unique (D, CL) response sets.'.format(df.shape[0]))
+        logger.info('Loaded {} unique (D, CL) response sets.'.format(df_nci.shape[0] + df_gdsc.shape[0]))
         # df[['GROWTH', 'LOG_CONCENTRATION']].to_csv('all.response.csv')
-        df = df.reset_index()
+        df_nci = df_nci.reset_index()
+        df_gdsc = df_gdsc.reset_index()
 
         if 'all' in cell_features:
             self.cell_features = ['expression', 'mirna', 'proteome']
@@ -672,6 +730,24 @@ class DataLoader(object):
 
         self.input_shapes = collections.OrderedDict()
         self.input_shapes['drug_concentration'] = (1,)
+        
+        for fea in self.drug_features:
+            if fea == 'descriptors':
+                self.df_drug_desc_nci, self.df_drug_desc_gdsc = load_drug_descriptors(drug_desc_path, dtype, ncols=feature_subsample, scaling=scaling)
+                self.input_shapes['drug_descriptors'] = (self.df_drug_desc.shape[1] - 1,)
+                df_nci = df_nci.merge(self.df_drug_desc_nci[['NSC']], on='NSC')
+                df_gdsc = df_gdsc.merge(self.df_drug_desc_gdsc[['GDSC']], on='GDSC')
+            elif fea == 'latent':
+                self.df_drug_auen = load_drug_autoencoded(drug_auen_path, dtype, ncols=feature_subsample, scaling=scaling)
+                self.input_shapes['drug_SMILES_latent'] = (self.df_drug_auen.shape[1] - 1,)
+                df = df.merge(self.df_drug_auen[['NSC']], on='NSC')
+            elif fea == 'noise':
+                df_drug_ids = df[['NSC']].drop_duplicates()
+                noise = np.random.normal(size=(df_drug_ids.shape[0], 500))
+                df_rand = pd.DataFrame(noise, index=df_drug_ids['NSC'],
+                                       columns=['RAND-{:03d}'.format(x) for x in range(500)])
+                self.df_drug_rand = df_rand.reset_index()
+                self.input_shapes['drug_random_vector'] = (self.df_drug_rand.shape[1] - 1,)
 
         for fea in self.cell_features:
             if fea == 'expression':
@@ -694,22 +770,6 @@ class DataLoader(object):
                 self.df_cell_cat = df_cell_cat.reset_index()
                 self.input_shapes['cell_categorical'] = (self.df_cell_cat.shape[1] - 1,)
 
-        for fea in self.drug_features:
-            if fea == 'descriptors':
-                self.df_drug_desc = load_drug_descriptors(drug_desc_path, dtype, ncols=feature_subsample, scaling=scaling)
-                self.input_shapes['drug_descriptors'] = (self.df_drug_desc.shape[1] - 1,)
-                df = df.merge(self.df_drug_desc[['NSC']], on='NSC')
-            elif fea == 'latent':
-                self.df_drug_auen = load_drug_autoencoded(drug_auen_path, dtype, ncols=feature_subsample, scaling=scaling)
-                self.input_shapes['drug_SMILES_latent'] = (self.df_drug_auen.shape[1] - 1,)
-                df = df.merge(self.df_drug_auen[['NSC']], on='NSC')
-            elif fea == 'noise':
-                df_drug_ids = df[['NSC']].drop_duplicates()
-                noise = np.random.normal(size=(df_drug_ids.shape[0], 500))
-                df_rand = pd.DataFrame(noise, index=df_drug_ids['NSC'],
-                                       columns=['RAND-{:03d}'.format(x) for x in range(500)])
-                self.df_drug_rand = df_rand.reset_index()
-                self.input_shapes['drug_random_vector'] = (self.df_drug_rand.shape[1] - 1,)
 
         logger.debug('Filtered down to {} rows with matching information.'.format(df.shape[0]))
         # df[['GROWTH', 'LOG_CONCENTRATION']].to_csv('filtered.response.csv')
