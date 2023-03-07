@@ -383,7 +383,7 @@ def load_cellline_expressions(path, dtype, ncols=None, scaling='std'):
     
     ################### CCLE expression #######################
     
-    df = pd.read_csv('/global/u2/v/vineethg/NCI-DOE-Collab-Pilot1-Single-Drug-Response-Predictor/Data/Pilot1/filtered_ccle.tsv', sep='\t', engine='c', na_values=['na','-','', 'NaN'])
+    df = pd.read_csv('global/homes/v/vineethg/xgboost-single-drug-reponse-prediction/data/CCLE_combat_RNASEQ.txt', sep='\t', engine='c', na_values=['na','-','', 'NaN'])
     
     df1 = df['CELLNAME']
     df2 = df.drop('CELLNAME', 1)
@@ -397,8 +397,8 @@ def load_cellline_expressions(path, dtype, ncols=None, scaling='std'):
     df2 = df2.astype(dtype)
     df = pd.concat([df1, df2], axis=1)
 
-    merged_cell_exp = pd.concat([nci, df], join="outer", axis=0, ignore_index=True)
-    return merged_cell_exp#nci, df
+    #merged_cell_exp = pd.concat([nci, df], join="outer", axis=0, ignore_index=True)
+    return nci, df #merged_cell_exp#nci, df
 
 
 def load_cellline_mirna(path, dtype, ncols=None, scaling='std'):

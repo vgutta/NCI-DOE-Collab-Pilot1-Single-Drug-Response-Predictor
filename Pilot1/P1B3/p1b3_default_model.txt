@@ -1,7 +1,7 @@
 [Global_Params]
 dense=[1000, 500, 100, 50]
 batch_size=100
-epochs=1
+epochs=50
 activation='relu'
 loss='mse'
 optimizer='sgd'
