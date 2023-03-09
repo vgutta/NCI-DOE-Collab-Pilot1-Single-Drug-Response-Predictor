@@ -267,8 +267,8 @@ def load_cellline_expressions(path, dtype, ncols=None, scaling='std'):
     
     ################### CCLE expression #######################
     
-    df = pd.read_csv('/global/homes/v/vineethg/xgboost-single-drug-reponse-prediction/data/CCLE_combat_RNASEQ.txt', sep='\t', engine='c', na_values=['na','-','', 'NaN'])
-    lincs1000_genes = pd.read_csv('/global/homes/v/vineethg/xgboost-single-drug-reponse-prediction/data/lincs1000.tsv', sep='\t')
+    df = pd.read_csv('./data/CCLE_combat_RNASEQ.txt', sep='\t', engine='c', na_values=['na','-','', 'NaN'])
+    lincs1000_genes = pd.read_csv('./data/lincs1000.tsv', sep='\t')
 
     lincs_index = lincs1000_genes.set_index(['symbol']).index
 
@@ -397,7 +397,7 @@ def load_drug_descriptors(path, dtype, ncols=None, scaling='std'):
     
     ################# GDSC Drug descriptors ##########################
     
-    df = pd.read_csv('/global/homes/v/vineethg/xgboost-single-drug-reponse-prediction/data/ccle_drug_descriptors_dragon7.tsv', sep='\t', engine='c',
+    df = pd.read_csv('./data/ccle_drug_descriptors_dragon7.tsv', sep='\t', engine='c',
                      na_values=['na','-','', 'NaN'],
                      dtype=dtype,
                      converters ={'NAME' : str})
@@ -478,7 +478,7 @@ def load_dose_response(path, seed, dtype, min_logconc=-5., max_logconc=-5., subs
     """
     
     ############## CCLE drugset ########################
-    df = pd.read_csv('/global/homes/v/vineethg/xgboost-single-drug-reponse-prediction/data/CCLE_drug.txt', sep='\t', engine='c',
+    df = pd.read_csv('./data/CCLE_drug.txt', sep='\t', engine='c',
                      na_values=['na','-','', 'NaN'],
                      dtype={'SOURCE':object, 'CELL':str, 'DRUG':str, 'AUC':dtype, 'IC50':dtype})
     
@@ -589,8 +589,8 @@ class DataLoader(object):
         logger.debug('Filtered down to {} rows with matching information.'.format(df.shape[0]))
         # df[['GROWTH', 'LOG_CONCENTRATION']].to_csv('filtered.response.csv')
 
-        df_test_cell = pd.read_csv('/global/homes/v/vineethg/xgboost-single-drug-reponse-prediction/models/xgb_drug-desc_auc_v1/val_cell.csv')
-        df_test_drug = pd.read_csv('/global/homes/v/vineethg/xgboost-single-drug-reponse-prediction/models/xgb_drug-desc_auc_v1/val_drug.csv')
+        df_test_cell = pd.read_csv('./data/val_cell.csv')
+        df_test_drug = pd.read_csv('./data/val_drug.csv')
         
         df_train_val = df[(~df['CCLE'].isin(df_test_drug['CCLE'])) & (~df['CELLNAME'].isin(df_test_cell['CELLNAME']))]
         logger.debug('Combined train and validation set has {} rows'.format(df_train_val.shape[0]))
