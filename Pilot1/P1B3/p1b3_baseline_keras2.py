@@ -8,6 +8,8 @@ import argparse
 import csv
 import logging
 import sys
+import time
+import pandas as pd
 
 import numpy as np
 
@@ -23,7 +25,7 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 
 
-import p1b3 as benchmark
+import p1b3_all_drugs_new_data as benchmark
 import candle
 
 #np.set_printoptions(threshold=np.nan)
@@ -356,6 +358,8 @@ def run(gParameters):
 
     candleRemoteMonitor = candle.CandleRemoteMonitor(params=gParameters)
 
+    start_time = time.time()
+
     history = model.fit_generator(train_gen, train_steps,
                         epochs=gParameters['epochs'],
                         validation_data=val_gen,
@@ -363,6 +367,11 @@ def run(gParameters):
                         verbose=0,
                         callbacks=[checkpointer, loss_history, progbar, candleRemoteMonitor],
                         )
+    
+    end_time = time.time()
+    runtime = end_time - start_time
+
+    print("Runtime: ", runtime, " seconds")
 
     benchmark.logger.removeHandler(fh)
     benchmark.logger.removeHandler(sh)

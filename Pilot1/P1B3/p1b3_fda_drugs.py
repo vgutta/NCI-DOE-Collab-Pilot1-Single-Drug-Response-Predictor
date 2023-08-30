@@ -378,8 +378,8 @@ def load_cellline_expressions(path, dtype, ncols=None, scaling='std'):
     df = pd.concat([df1, df2], axis=1)
     
     '''
-    lincs1000_genes = pd.read_csv('/global/u2/v/vineethg/xgboost-single-drug-reponse-prediction/data/lincs1000.tsv', sep='\t')
-    nci_exp = pd.read_csv('/global/u2/v/vineethg/xgboost-single-drug-reponse-prediction/data/cell_exp_nci.tsv', sep= '\t')
+    lincs1000_genes = pd.read_csv('~/xgboost-single-drug-reponse-prediction/data/lincs1000.tsv', sep='\t')
+    nci_exp = pd.read_csv('~/xgboost-single-drug-reponse-prediction/data/cell_exp_nci.tsv', sep= '\t')
     
     lincs_index = lincs1000_genes.set_index(['symbol']).index
 
@@ -529,7 +529,7 @@ def load_drug_descriptors(path, dtype, ncols=None, scaling='std'):
 
     return df_dg
     '''
-    drug_desc = pd.read_csv('/global/homes/v/vineethg/NCI-DOE-Collab-Pilot1-Single-Drug-Response-Predictor/Data/Pilot1/descriptors.2D-NSC.5dose.filtered.txt', sep='\t', engine='c',
+    drug_desc = pd.read_csv('../../Data/Pilot1/descriptors.2D-NSC.5dose.filtered.txt', sep='\t', engine='c',
                      na_values=['na','-',''],
                      converters ={'NAME' : str})
     drug_desc.rename(columns={'NAME': 'NSC'}, inplace=True)
@@ -608,10 +608,10 @@ def load_dose_response(path, seed, dtype, min_logconc=-5., max_logconc=-5., subs
     '''
     
     
-    nci_fda_drugs = pd.read_csv('/global/u2/v/vineethg/xgboost-single-drug-reponse-prediction/data/nci_fda_drugs.csv',
+    nci_fda_drugs = pd.read_csv('~/xgboost-single-drug-reponse-prediction/data/nci_fda_drugs.csv',
                                 sep='\t',
                                dtype={'NSC': object})
-    combined_dose_response = pd.read_csv('/global/homes/v/vineethg/NCI-DOE-Collab-Pilot1-Single-Drug-Response-Predictor/Data/Pilot1/combined_single_response_agg', sep='\t')
+    combined_dose_response = pd.read_csv('~/xgboost-single-drug-reponse-prediction/data/combined_single_response_agg', sep='\t')
     nci60_dose_response = combined_dose_response[combined_dose_response['SOURCE'] == 'NCI60']
     
     nci60_filtered = nci60_dose_response[['CELL', 'DRUG', 'AUC']]
@@ -779,8 +779,8 @@ class DataLoader(object):
 
         #df_test_cell = pd.read_csv(test_cell_path)
         #df_test_drug = pd.read_csv(test_drug_path, dtype={'NSC':object})
-        df_test_cell = pd.read_csv('./data/val_nci60_cell.csv', sep=',', dtype={'CELLNAME':str})
-        df_test_drug = pd.read_csv('./data/val_nci60_fda_drugs.csv', sep=',', dtype={'NSC': object})
+        df_test_cell = pd.read_csv('~/xgboost-single-drug-reponse-prediction/data/val_nci60_cell.csv', sep=',', dtype={'CELLNAME':str})
+        df_test_drug = pd.read_csv('~/xgboost-single-drug-reponse-prediction/data/val_nci60_fda_drugs.csv', sep=',', dtype={'NSC': object})
 
         df_train_val = df[(~df['NSC'].isin(df_test_drug['NSC'])) & (~df['CELLNAME'].isin(df_test_cell['CELLNAME']))]
         logger.debug('Combined train and validation set has {} rows'.format(df_train_val.shape[0]))
